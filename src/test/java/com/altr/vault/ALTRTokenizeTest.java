@@ -1,4 +1,4 @@
-package com.altr.vault;
+package com.altr.tokenize;
 
 import java.util.List;
 import java.io.IOException;
@@ -24,7 +24,6 @@ public class ALTRTokenizeTest {
         this.mockWebServer = new MockWebServer();
         this.mockWebServer.start();
     
-        // Update ALTRTokenize to use the mock server's URL
         String mockBaseUrl = mockWebServer.url("/").toString();
     
         String key = System.getenv("ALTR_KEY");
@@ -46,7 +45,6 @@ public class ALTRTokenizeTest {
             expectedOutput.add("tokenizedData2");
             Assert.assertEquals(expectedOutput, actualOutput);
         } catch (ALTRException e) {
-            // this block should not be reached
             Assert.fail("Tokenization failed with exception: " + e.getMessage());
         }
     }
@@ -64,7 +62,6 @@ public class ALTRTokenizeTest {
             expectedOutput.add("sampleData1");
             Assert.assertEquals(expectedOutput, actualOutput);
         } catch (ALTRException e) {
-            // this block should not be reached
             Assert.fail("Detokenization failed with exception: " + e.getMessage());
         }
     }
@@ -82,7 +79,6 @@ public class ALTRTokenizeTest {
             expectedOutput.add("tokenizedData2");
             Assert.assertEquals(expectedOutput, actualOutput);
         } catch (ALTRException e) {
-            // this block should not be reached
             Assert.fail("Tokenization failed with exception: " + e.getMessage());
         }
     }
@@ -100,7 +96,6 @@ public class ALTRTokenizeTest {
             expectedOutput.add("sampleData1");
             Assert.assertEquals(expectedOutput, actualOutput);
         } catch (ALTRException e) {
-            // this block should not be reached
             Assert.fail("Detokenization failed with exception: " + e.getMessage());
         }
     }
