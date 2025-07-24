@@ -33,7 +33,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class ALTRTokenize {
 
-    private static final int TOKEN_BATCH_SIZE = 1024;
+    public static final int DEFAULT_TOKEN_BATCH_SIZE = 1024; 
+    private static int TOKEN_BATCH_SIZE;
 
     private static final String X_ALTR_DETERMINISM_HEADER = "X-ALTR-DETERMINISM";
     private static final String IS_DETERMINISTIC = "true";
@@ -52,15 +53,38 @@ public class ALTRTokenize {
     private static final int MAX_RETRIES = 3;
 
     private final Request.Builder requestTemplate;
+    private final OkHttpClient client;
+    private final MediaType mediaType;
     
     /**
-     * Constructor for ALTRTokenize class.
+     * Constructor for ALTRTokenize class, using default batch size (1024).
      * @param mapiKey ALTR Management API Key
      * @param mapiSecret ALTR Management API Secret
      * @param url URL of the ALTR Vaulted Tokenization API. Example: "https://<ALTR_ORG_ID>.vault.live.altr.com/api/v2/batch"
      */
     public ALTRTokenize(String mapiKey, String mapiSecret, String url) {
         String basicAuth = "Basic " + Base64.getEncoder().encodeToString((mapiKey + ":" + mapiSecret).getBytes());
+        ALTRTokenize.TOKEN_BATCH_SIZE = DEFAULT_TOKEN_BATCH_SIZE;
+        this.client = new OkHttpClient();
+        this.mediaType = MediaType.parse("application/json");
+        this.requestTemplate = new Request.Builder()
+                .url(url)
+                .addHeader("AUTHORIZATION", basicAuth)
+                .addHeader("Content-Type", "application/json");
+    }
+
+    /**
+     * Constructor for ALTRTokenize class.
+     * @param mapiKey ALTR Management API Key
+     * @param mapiSecret ALTR Management API Secret
+     * @param url URL of the ALTR Vaulted Tokenization API. Example: "https://<ALTR_ORG_ID>.vault.live.altr.com/api/v2/batch"
+     * @param batchSize Size of the batch for tokenization requests. Default is 1024.
+     */
+    public ALTRTokenize(String mapiKey, String mapiSecret, String url, int batchSize) {
+        String basicAuth = "Basic " + Base64.getEncoder().encodeToString((mapiKey + ":" + mapiSecret).getBytes());
+        ALTRTokenize.TOKEN_BATCH_SIZE = batchSize > 0 ? batchSize : DEFAULT_TOKEN_BATCH_SIZE;
+        this.client = new OkHttpClient();
+        this.mediaType = MediaType.parse("application/json");
         this.requestTemplate = new Request.Builder()
                 .url(url)
                 .addHeader("AUTHORIZATION", basicAuth)
@@ -163,9 +187,7 @@ public class ALTRTokenize {
      * @throws ALTRException
      */
     private Map<String, String> sendTokenizationRequest(String json, boolean isDetokenize, boolean isDeterministic) throws ALTRException {
-        OkHttpClient client = new OkHttpClient();
-        MediaType mediaType = MediaType.parse("application/json");
-        RequestBody body = RequestBody.create(json, mediaType);
+        RequestBody body = RequestBody.create(json, this.mediaType);
         Request request = requestTemplate
                 .method(isDetokenize ? HTTP_READ_METHOD : HTTP_WRITE_METHOD, body)
                 .addHeader(X_ALTR_DETERMINISM_HEADER, isDeterministic ? IS_DETERMINISTIC : IS_NOT_DETERMINISTIC)
